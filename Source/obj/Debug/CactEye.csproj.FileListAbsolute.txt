@@ -1,0 +1,6 @@
+C:\Users\aburns2\Documents\Visual Studio 2013\Projects\CatEye\CactEye\Source\bin\Debug\CactEye.dll
+C:\Users\aburns2\Documents\Visual Studio 2013\Projects\CatEye\CactEye\Source\bin\Debug\CactEye.pdb
+C:\Users\aburns2\Documents\Visual Studio 2013\Projects\CatEye\CactEye\Source\bin\Debug\Assembly-CSharp.dll
+C:\Users\aburns2\Documents\Visual Studio 2013\Projects\CatEye\CactEye\Source\bin\Debug\UnityEngine.dll
+C:\Users\aburns2\Documents\Visual Studio 2013\Projects\CatEye\CactEye\Source\obj\Debug\CactEye.dll
+C:\Users\aburns2\Documents\Visual Studio 2013\Projects\CatEye\CactEye\Source\obj\Debug\CactEye.pdb

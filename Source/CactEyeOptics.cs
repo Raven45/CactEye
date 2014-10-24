@@ -59,7 +59,7 @@ namespace CactEye
             }
 
             fullRect = new Rect(0, 0, Screen.width, Screen.height);
-            smallRect = new Rect(0, 0, 160, 160 / FlightCamera.fetch.mainCamera.aspect);
+            smallRect = new Rect(0, 0, 160, ( 160 / FlightCamera.fetch.mainCamera.aspect ));
 
             skyboxRenderers = (from Renderer r in (FindObjectsOfType(typeof(Renderer)) as IEnumerable<Renderer>) where (r.name == "XP" || r.name == "XN" || r.name == "YP" || r.name == "YN" || r.name == "ZP" || r.name == "ZN") select r).ToArray<Renderer>();
             scaledSpaceFaders = FindObjectsOfType(typeof(ScaledSpaceFader)) as ScaledSpaceFader[];
@@ -158,6 +158,7 @@ namespace CactEye
                     c.pixelRect = fullRect;
                     c.targetTexture = rtFull;
                 }
+
                 else
                 {
                     c.pixelRect = smallRect;
@@ -165,7 +166,10 @@ namespace CactEye
                 }
 
                 if (c.name.Contains("0"))
+                {
                     c.transform.position = camTrans.position;
+                }
+
                 c.transform.forward = camTrans.forward;
                 c.transform.rotation = camTrans.rotation;
                 c.fieldOfView = fov;
@@ -186,36 +190,30 @@ namespace CactEye
 
             if (isFull)
             {
+                //Read from RenderTexture.active to fullTex
                 fullTex.ReadPixels(fullRect, 0, 0);
                 fullTex.Apply();
 
-                byte[] bytes = fullTex.EncodeToPNG();
-
-                if (!System.IO.Directory.Exists(CactEyeVars.root + "Screenshots/CactEye"))
-                    System.IO.Directory.CreateDirectory(CactEyeVars.root + "Screenshots/CactEye");
-                string filename = "Screenshots/CactEye/" + HighLogic.SaveFolder + "_" + targetName + "_" + CactEyeVars.Time() + ".png";
-
-                System.IO.File.WriteAllBytes(CactEyeVars.root + filename, bytes);
-
-                print("CactEye: saved screenshot to " + filename);
+                //Write to file. 
+                //Will probably incorporate a conditional with a config file, so that users can choose to enable/disable this
+                string filename = WriteImageToFile(fullTex, targetName);
 
                 RenderTexture.active = currentRT;
                 return filename;
             }
+
             else
             {
+                //read from RenderTexture.active to outputTex
                 outputTex.ReadPixels(smallRect, 0, 0);
 
-                //grayscale!
-                Color[] texColors = outputTex.GetPixels();
-                for (int i = 0; i < texColors.Length; i++)
-                {
-                    float grayValue = texColors[i].grayscale;
-                    texColors[i] = new Color(grayValue, grayValue, grayValue, texColors[i].a);
-                }
-                outputTex.SetPixels(texColors);
+                //Convert image to Grayscale
+                outputTex = ConvertToGrayScale(outputTex);
+
+                //Apply changes
                 outputTex.Apply();
 
+                //Set RenderTexture back.
                 RenderTexture.active = currentRT;
                 return "";
             }
@@ -255,6 +253,8 @@ namespace CactEye
             Events["FixScope"].active = true;
         }
 
+
+        //refactor
         public Vector3 GetTargetPos(Vector3 worldPos, float width)
         {
             Camera c = cameras.Find(n => n.name.Contains("00"));
@@ -271,6 +271,37 @@ namespace CactEye
             }
             
             return new Vector3(-1, -1, 0);
+        }
+
+        private Texture2D ConvertToGrayScale(Texture2D Texture)
+        {
+            //grayscale!
+            Color[] texColors = Texture.GetPixels();
+            for (int i = 0; i < texColors.Length; i++)
+            {
+                float grayValue = texColors[i].grayscale;
+                texColors[i] = new Color(grayValue, grayValue, grayValue, texColors[i].a);
+            }
+            Texture.SetPixels(texColors);
+
+            return Texture;
+        }
+
+        private string WriteImageToFile(Texture2D Image, string targetName)
+        {
+            byte[] bytes = Image.EncodeToPNG();
+
+            //Need to create a config.xml to help get away from hard coding some of this stuff.
+
+            if (!System.IO.Directory.Exists(CactEyeVars.root + "Screenshots/CactEye"))
+                System.IO.Directory.CreateDirectory(CactEyeVars.root + "Screenshots/CactEye");
+            string filename = "Screenshots/CactEye/" + HighLogic.SaveFolder + "_" + targetName + "_" + CactEyeVars.Time() + ".png";
+
+            System.IO.File.WriteAllBytes(CactEyeVars.root + filename, bytes);
+
+            print("CactEye: saved screenshot to " + filename);
+
+            return filename;
         }
     }
 }
